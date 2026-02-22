@@ -26,11 +26,8 @@ RUN sed -i \
     's|^SQUAWKS\[-1\]=.*|[[ ${#SQUAWKS[@]} -gt 0 ]] \&\& SQUAWKS[-1]="${SQUAWKS[-1]%$'"'"'\\n'"'"'}"|' \
     /usr/share/planefence/pf-process_sbs.sh
 
-# Upstream bug: socket30003 restart loop uses "|| true" which forces exitcode=0,
-# so the 15s LOOPTIME sleep never fires when socket30003.pl crashes.
-# Replace the || true with proper exit code capture so the sleep works.
-RUN sed -i \
-    's|timeout "\$RESTARTTIME" /usr/share/socket30003/socket30003.pl &>/dev/null || true|timeout "$RESTARTTIME" /usr/share/socket30003/socket30003.pl \&>/dev/null; exitcode="$?"|' \
-    /etc/s6-overlay/scripts/socket30003 \
-    && sed -i '/exitcode="\$?"/{ n; /exitcode="\$?"/ d }' \
+# Upstream bug: socket30003 restart loop has "|| true" after socket30003.pl which
+# forces exitcode=0, so the 15s LOOPTIME sleep never fires when it crashes.
+# exitcode="$?" is already on the next line — just strip the || true.
+RUN sed -i '/socket30003\.pl.*&>\/dev\/null/ s/ || true//' \
     /etc/s6-overlay/scripts/socket30003
