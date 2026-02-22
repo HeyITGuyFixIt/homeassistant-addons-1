@@ -19,5 +19,5 @@ RUN chmod +x /export-env-from-config.sh
 
 # Inject config sourcing into all s6 run/script files so HA options
 # are available as environment variables when services start
-RUN find /etc/s6-overlay/s6-rc.d/ -name script -o -name run | \
-    xargs --no-run-if-empty sed -i '1 a\source /export-env-from-config.sh'
+RUN find /etc/s6-overlay/s6-rc.d/ -name script -o -name run \
+    | xargs --no-run-if-empty sed -i '1 a\source /export-env-from-config.sh'

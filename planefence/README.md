@@ -10,27 +10,27 @@ The **ADS-B Multi-Portal Feeder** add-on must be running and exposing port 30003
 
 ## Configuration
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `PF_SOCK30003HOST` | `adsb-multi-portal-feeder` | Hostname of your ADS-B feeder add-on |
-| `PF_SOCK30003PORT` | `30003` | SBS output port |
-| `PF_LAT` | HA latitude | Your station latitude (auto-filled from Home Assistant) |
-| `PF_LON` | HA longitude | Your station longitude (auto-filled from Home Assistant) |
-| `PF_MAXDIST` | `50` | Maximum distance from station (nautical miles) |
-| `PF_MAXALT` | `10000` | Maximum altitude (feet) |
-| `TZ` | `UTC` | Timezone, e.g. `Europe/Berlin` |
+| Option             | Default                    | Description                                              |
+| ------------------ | -------------------------- | -------------------------------------------------------- |
+| `PF_SOCK30003HOST` | `adsb-multi-portal-feeder` | Hostname of your ADS-B feeder add-on                     |
+| `PF_SOCK30003PORT` | `30003`                    | SBS output port                                          |
+| `PF_LAT`           | HA latitude                | Your station latitude (auto-filled from Home Assistant)  |
+| `PF_LON`           | HA longitude               | Your station longitude (auto-filled from Home Assistant) |
+| `PF_MAXDIST`       | `50`                       | Maximum distance from station (nautical miles)           |
+| `PF_MAXALT`        | `10000`                    | Maximum altitude (feet)                                  |
+| `TZ`               | `UTC`                      | Timezone, e.g. `Europe/Berlin`                           |
 
 ### Optional alert settings
 
-| Option | Description |
-|--------|-------------|
-| `PA_DISCORD` | Discord webhook URL for alerts |
-| `PA_MASTODON_SERVER` | Mastodon server URL (e.g. `https://mastodon.social`) |
-| `PA_MASTODON_ACCESS_TOKEN` | Mastodon access token |
-| `PA_TELEGRAM_BOTTOKEN` | Telegram bot token |
-| `PA_TELEGRAM_CHATID` | Telegram chat ID |
-| `PA_EXCLUSIONS` | Comma-separated list of ICAO hex codes, registrations, or strings to exclude |
-| `PF_OPENAIP_LAYER` | Show OpenAIP overlay on heatmap (`ON` / `OFF`) |
+| Option                     | Description                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| `PA_DISCORD`               | Discord webhook URL for alerts                                               |
+| `PA_MASTODON_SERVER`       | Mastodon server URL (e.g. `https://mastodon.social`)                         |
+| `PA_MASTODON_ACCESS_TOKEN` | Mastodon access token                                                        |
+| `PA_TELEGRAM_BOTTOKEN`     | Telegram bot token                                                           |
+| `PA_TELEGRAM_CHATID`       | Telegram chat ID                                                             |
+| `PA_EXCLUSIONS`            | Comma-separated list of ICAO hex codes, registrations, or strings to exclude |
+| `PF_OPENAIP_LAYER`         | Show OpenAIP overlay on heatmap (`ON` / `OFF`)                               |
 
 ## Web UI
 
