@@ -10,10 +10,12 @@
 # Source HA options as environment variables
 . /export-env-from-config.sh
 
-# /data is the HA addon's persistent storage (survives restarts/updates).
-# Symlink planefence's expected persist dir to /data/persist so all
-# noise logs, history, plane-alert-db, etc. are kept across restarts.
-DATA_PERSIST="/data/persist"
+# /addon_config is mounted by HA Supervisor (map: addon_config:rw in config.yaml).
+# It lives at /addon_configs/planefence/ on the host, so the VS Code addon and
+# other tools can reach it. Symlink planefence's expected persist dir here so
+# all noise logs, history, plane-alert-db and planefence.config survive restarts
+# and are user-accessible.
+DATA_PERSIST="/addon_config"
 PERSIST_DIR="/usr/share/planefence/persist"
 
 mkdir -p "${DATA_PERSIST}"

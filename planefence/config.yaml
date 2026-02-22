@@ -1,13 +1,15 @@
 slug: planefence
 url: https://github.com/MaxWinterstein/homeassistant-addons/
 # image: ghcr.io/maxwinterstein/homeassistant-planefence-{arch}
-version: 0.1.0
+version: 0.1.1
 arch:
   - aarch64
   - amd64
 description: Track aircraft flying near your ADS-B receiver with noise logging and alerts
 hassio_api: true
 homeassistant_api: true
+map:
+  - addon_config:rw
 ingress: true
 ingress_port: 80
 init: false

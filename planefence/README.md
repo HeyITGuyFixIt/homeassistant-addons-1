@@ -35,7 +35,7 @@ The add-on only overwrites the options listed in the table above; everything
 else you set manually will survive restarts.
 
 > **Tip:** The [Visual Studio Code add-on](https://github.com/hassio-addons/addon-vscode)
-> lets you edit `/addon_configs/planefence/persist/planefence.config` directly
+> lets you edit `/addon_configs/planefence/planefence.config` directly
 > from your browser.
 
 ## Web UI
