@@ -18,14 +18,15 @@
 PERSIST_DIR="/usr/share/planefence/persist"
 
 # Determine where to persist data.
-# Prefer /addon_config (map: addon_config:rw in config.yaml, accessible via VS Code).
-# Fall back to /data if /addon_config is not mounted (e.g. older HA or local testing).
-if mountpoint -q /addon_config 2>/dev/null || [ -d /addon_config ]; then
-    DATA_PERSIST="/addon_config"
-    echo "[ha-planefence-config] Using /addon_config for persistent storage"
+# Prefer /config/planefence (map: config:rw in config.yaml — always available,
+# accessible via VS Code and File Editor addons).
+# Fall back to /data/persist if /config is not mounted (e.g. local testing).
+if [ -d /config ]; then
+    DATA_PERSIST="/config/planefence"
+    echo "[ha-planefence-config] Using /config/planefence for persistent storage"
 else
     DATA_PERSIST="/data/persist"
-    echo "[ha-planefence-config] WARNING: /addon_config not available, falling back to /data/persist"
+    echo "[ha-planefence-config] WARNING: /config not available, falling back to /data/persist"
 fi
 
 mkdir -p "${DATA_PERSIST}"

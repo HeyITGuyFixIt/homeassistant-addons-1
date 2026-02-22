@@ -4,6 +4,8 @@ Track aircraft flying near your ADS-B receiver. Planefence logs low-altitude / n
 
 This add-on wraps [docker-planefence](https://github.com/sdr-enthusiasts/docker-planefence) by kx1t / SDR-Enthusiasts.
 
+> **Note:** The add-on icon is AI-generated and not an official logo of the planefence project.
+
 ## Before you start
 
 **This add-on requires two things to be set up before it will show any data:**
@@ -27,7 +29,7 @@ This add-on wraps [docker-planefence](https://github.com/sdr-enthusiasts/docker-
 ### Advanced configuration
 
 On first start, the add-on copies the full upstream config template to
-`/data/persist/planefence.config`. This file contains all available options
+`/config/planefence/planefence.config`. This file contains all available options
 with inline comments — edit it for anything not covered by the UI above (alerts,
 filtering, map customisation, etc.). See the [upstream documentation](https://github.com/sdr-enthusiasts/docker-planefence) for details.
 
@@ -35,7 +37,7 @@ The add-on only overwrites the options listed in the table above; everything
 else you set manually will survive restarts.
 
 > **Tip:** The [Visual Studio Code add-on](https://github.com/hassio-addons/addon-vscode)
-> lets you edit `/addon_configs/planefence/planefence.config` directly
+> lets you edit `/config/planefence/planefence.config` directly
 > from your browser.
 
 ## Web UI
