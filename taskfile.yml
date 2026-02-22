@@ -53,11 +53,11 @@ tasks:
       - mkdir -p "$(pwd)/test/data/addon_config/.internal"
       - cp "$(pwd)/test/options.json" "$(pwd)/test/data/options.json"
       - docker run --rm -ti
-          -v "$(pwd)/test/data:/data"
-          -v "$(pwd)/test/data/addon_config:/addon_config"
-          -e SUPERVISOR_TOKEN=fake
-          -p 8088:80
-          planefence-test
+        -v "$(pwd)/test/data:/data"
+        -v "$(pwd)/test/data/addon_config:/addon_config"
+        -e SUPERVISOR_TOKEN=fake
+        -p 8088:80
+        planefence-test
 
   planefence:build-and-run:
     desc: "🏗️▶️ Build and run planefence locally in one step"
