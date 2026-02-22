@@ -28,6 +28,15 @@
     },
     {
       customType: "regex",
+      managerFilePatterns: ["/(^|/)build\\.json$/"],
+      matchStrings: [
+        '"(?<depName>ghcr\\.io/sdr-enthusiasts/docker-planefence):(?<currentValue>[^"]+)"',
+      ],
+      datasourceTemplate: "docker",
+      versioningTemplate: "regex:^latest-build-(?<major>\\d+)$",
+    },
+    {
+      customType: "regex",
       managerFilePatterns: ["//Dockerfile$/", "//build.yaml$/"],
       matchStringsStrategy: "any",
       matchStrings: [
@@ -45,6 +54,10 @@
     {
       matchFileNames: ["fr24-sharing-key-generator/**"],
       groupName: "fr24-sharing-key-generator dependencies",
+    },
+    {
+      matchFileNames: ["planefence/**"],
+      groupName: "planefence dependencies",
     },
     {
       matchPackageNames: ["*", "/.*/"],
