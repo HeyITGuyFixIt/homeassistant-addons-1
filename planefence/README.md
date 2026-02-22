@@ -4,9 +4,13 @@ Track aircraft flying near your ADS-B receiver. Planefence logs low-altitude / n
 
 This add-on wraps [docker-planefence](https://github.com/sdr-enthusiasts/docker-planefence) by kx1t / SDR-Enthusiasts.
 
-## Prerequisites
+## Before you start
 
-The **ADS-B Multi-Portal Feeder** add-on must be running and exposing port 30003 (BaseStation/SBS output). Planefence reads aircraft data from that port.
+**This add-on requires two things to be set up before it will show any data:**
+
+1. **ADS-B feeder** — The [ADS-B Multi-Portal Feeder](https://github.com/MaxWinterstein/homeassistant-addons) add-on (or any other feeder) must be running and exposing port `30003` (BaseStation/SBS format). Set `PF_SOCK30003HOST` to its hostname.
+
+2. **Location** — Planefence needs to know where your station is. By default it reads `PF_LAT` / `PF_LON` directly from your Home Assistant location. If your HA location is not set, fill them in manually in the add-on options.
 
 ## Configuration
 
@@ -20,24 +24,22 @@ The **ADS-B Multi-Portal Feeder** add-on must be running and exposing port 30003
 | `PF_MAXALT`        | `10000`                    | Maximum altitude (feet)                                  |
 | `TZ`               | `UTC`                      | Timezone, e.g. `Europe/Berlin`                           |
 
-### Optional alert settings
+### Advanced configuration
 
-| Option                     | Description                                                                  |
-| -------------------------- | ---------------------------------------------------------------------------- |
-| `PA_DISCORD`               | Discord webhook URL for alerts                                               |
-| `PA_MASTODON_SERVER`       | Mastodon server URL (e.g. `https://mastodon.social`)                         |
-| `PA_MASTODON_ACCESS_TOKEN` | Mastodon access token                                                        |
-| `PA_TELEGRAM_BOTTOKEN`     | Telegram bot token                                                           |
-| `PA_TELEGRAM_CHATID`       | Telegram chat ID                                                             |
-| `PA_EXCLUSIONS`            | Comma-separated list of ICAO hex codes, registrations, or strings to exclude |
-| `PF_OPENAIP_LAYER`         | Show OpenAIP overlay on heatmap (`ON` / `OFF`)                               |
+On first start, the add-on copies the full upstream config template to
+`/data/persist/planefence.config`. This file contains all available options
+with inline comments — edit it for anything not covered by the UI above (alerts,
+filtering, map customisation, etc.). See the [upstream documentation](https://github.com/sdr-enthusiasts/docker-planefence) for details.
+
+The add-on only overwrites the options listed in the table above; everything
+else you set manually will survive restarts.
+
+> **Tip:** The [Visual Studio Code add-on](https://github.com/hassio-addons/addon-vscode)
+> lets you edit `/addon_configs/planefence/persist/planefence.config` directly
+> from your browser.
 
 ## Web UI
 
-The Planefence web interface is available via the **Open Web UI** button in the add-on info page, or via the sidebar panel.
-
-## Notes
-
-- Aircraft are logged to `/data/planefence/` inside the container (persisted across restarts).
-- Latitude and longitude are automatically taken from your Home Assistant configuration but can be overridden manually.
-- For more details on advanced configuration, see the [upstream documentation](https://github.com/sdr-enthusiasts/docker-planefence).
+Once aircraft are being received, the Planefence web interface is available via
+the **Open Web UI** button on the add-on info page, or via the sidebar panel.
+It may take a few minutes after startup before the first entries appear.

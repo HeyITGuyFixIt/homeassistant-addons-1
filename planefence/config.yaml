@@ -1,6 +1,6 @@
 slug: planefence
 url: https://github.com/MaxWinterstein/homeassistant-addons/
-image: ghcr.io/maxwinterstein/homeassistant-planefence-{arch}
+# image: ghcr.io/maxwinterstein/homeassistant-planefence-{arch}
 version: 0.1.0
 arch:
   - aarch64
@@ -9,49 +9,38 @@ description: Track aircraft flying near your ADS-B receiver with noise logging a
 hassio_api: true
 homeassistant_api: true
 ingress: true
-ingress_port: 8088
+ingress_port: 80
 init: false
 name: Planefence
 panel_icon: mdi:airplane-alert
 panel_title: Planefence
 
 options:
-  # ADS-B source (your adsb-multi-portal-feeder addon)
   PF_SOCK30003HOST: adsb-multi-portal-feeder
   PF_SOCK30003PORT: 30003
-  # Location (auto-filled from Home Assistant)
   PF_LAT: HOMEASSISTANT_LATITUDE
   PF_LON: HOMEASSISTANT_LONGITUDE
-  # Fence parameters
   PF_MAXDIST: 50
   PF_MAXALT: 10000
-  # Timezone
   TZ: UTC
 
 schema:
-  # ADS-B source
   PF_SOCK30003HOST: str
   PF_SOCK30003PORT: port
-  # Location
   PF_LAT: match([+-]?(([1-9][0-9]*)|(0))([.,][0-9]+)?|HOMEASSISTANT_LATITUDE)?
   PF_LON: match([+-]?(([1-9][0-9]*)|(0))([.,][0-9]+)?|HOMEASSISTANT_LONGITUDE)?
-  # Fence parameters
   PF_MAXDIST: int
   PF_MAXALT: int
-  # Timezone
   TZ: str
-  # Alerts (optional)
   PA_DISCORD: url?
   PA_MASTODON_SERVER: str?
   PA_MASTODON_ACCESS_TOKEN: str?
   PA_TELEGRAM_BOTTOKEN: str?
   PA_TELEGRAM_CHATID: str?
-  # Filtering (optional)
   PA_EXCLUSIONS: str?
-  # OpenAIP layer for heatmap (optional)
   PF_OPENAIP_LAYER: list(ON|OFF)?
 
 ports:
-  8088/tcp: null
+  80/tcp: null
 ports_description:
-  8088/tcp: Planefence web UI
+  80/tcp: Planefence web UI
