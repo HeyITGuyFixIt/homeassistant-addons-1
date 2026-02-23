@@ -50,11 +50,11 @@ tasks:
     desc: "▶️ Run planefence locally with test config (needs planefence:build first)"
     dir: planefence
     cmds:
-      - mkdir -p "$(pwd)/test/data/config"
+      - mkdir -p "$(pwd)/test/data/config/planefence"
       - cp "$(pwd)/test/options.json" "$(pwd)/test/data/options.json"
       - docker run --rm -ti
         -v "$(pwd)/test/data:/data"
-        -v "$(pwd)/test/data/config:/config"
+        -v "$(pwd)/test/data/config/planefence:/addon_configs/planefence"
         -e SUPERVISOR_TOKEN=fake
         -p 8088:80
         planefence-test

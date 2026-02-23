@@ -16,13 +16,20 @@
 
 # The Dockerfile created /usr/share/planefence/persist -> /var/lib/planefence-persist
 # so s6 services can start cleanly. Now re-point to the real persistent location.
-# Fall back to the stub if /config is not available (e.g. local testing).
-if [ -d /config ]; then
+#
+# Priority:
+#   1. /addon_configs/planefence  – real HA with addon_config:rw mapping
+#   2. /config/planefence         – local testing (taskfile mounts /config)
+#   3. /var/lib/planefence-persist – ephemeral stub (nothing else available)
+if [ -d /addon_configs ]; then
+    DATA_PERSIST="/addon_configs/planefence"
+    echo "[ha-planefence-config] Using /addon_configs/planefence for persistent storage"
+elif [ -d /config ]; then
     DATA_PERSIST="/config/planefence"
     echo "[ha-planefence-config] Using /config/planefence for persistent storage"
 else
     DATA_PERSIST="/var/lib/planefence-persist"
-    echo "[ha-planefence-config] WARNING: /config not available, using ephemeral stub"
+    echo "[ha-planefence-config] WARNING: no persistent mount found, using ephemeral stub"
 fi
 
 mkdir -p "${DATA_PERSIST}"
