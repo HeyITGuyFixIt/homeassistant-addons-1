@@ -43,7 +43,10 @@ if [ -f "${UPSTREAM_TEMPLATE}" ] && [ ! -f "${SAVED_TEMPLATE}" ]; then
 fi
 
 if [ ! -L "${PERSIST_DIR}" ]; then
-    rm -rf "${PERSIST_DIR}"
+    # Remove directory contents first, then the dir itself, then symlink.
+    rm -rf "${PERSIST_DIR:?}/"*
+    rm -rf "${PERSIST_DIR:?}/".* 2>/dev/null || true
+    rmdir "${PERSIST_DIR}" 2>/dev/null || rm -rf "${PERSIST_DIR}"
     ln -sf "${DATA_PERSIST}" "${PERSIST_DIR}"
     echo "[ha-planefence-config] Linked ${PERSIST_DIR} -> ${DATA_PERSIST}"
 fi

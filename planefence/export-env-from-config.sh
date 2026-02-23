@@ -19,14 +19,17 @@ if [ ! -f '/data/options.json' ]; then
 fi
 
 # Fetch coordinates from HA Supervisor API
-_HA_CONFIG=$(curl -sf --connect-timeout 5 --max-time 10 \
+_HA_HTTP_STATUS=$(curl -s -o /tmp/ha_api_response --write-out "%{http_code}" \
+    --connect-timeout 5 --max-time 10 \
     -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
     -H "Content-Type: application/json" \
     http://supervisor/core/api/config)
 _CURL_EXIT=$?
+_HA_CONFIG=$(cat /tmp/ha_api_response 2>/dev/null)
 
 if [ $_CURL_EXIT -ne 0 ]; then
-    echo "[export-env] WARNING: HA API call failed (curl exit ${_CURL_EXIT}). Lat/lon placeholders will not be resolved." >&2
+    echo "[export-env] WARNING: HA API call failed (curl exit ${_CURL_EXIT}, http ${_HA_HTTP_STATUS}). Lat/lon placeholders will not be resolved." >&2
+    echo "[export-env] Response: ${_HA_CONFIG}" >&2
 elif [ -z "$_HA_CONFIG" ]; then
     echo "[export-env] WARNING: HA API returned empty response. Lat/lon placeholders will not be resolved." >&2
 else
