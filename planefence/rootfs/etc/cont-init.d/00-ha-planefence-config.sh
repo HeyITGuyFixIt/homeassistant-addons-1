@@ -74,6 +74,14 @@ if [ ! -f "${CONFIG_FILE}" ]; then
     fi
 fi
 
+# Warn if location placeholders were not resolved (HA location not configured).
+if [ "${PF_LAT}" = "HOMEASSISTANT_LATITUDE" ] || [ "${PF_LON}" = "HOMEASSISTANT_LONGITUDE" ]; then
+    echo "[ha-planefence-config] WARNING: PF_LAT/PF_LON are still placeholders."
+    echo "[ha-planefence-config] Please set your Home Assistant location under"
+    echo "[ha-planefence-config] Settings → System → General, or set PF_LAT/PF_LON"
+    echo "[ha-planefence-config] manually in the add-on options."
+fi
+
 # Update all HA-managed keys (runs on every start, including first).
 echo "[ha-planefence-config] Updating managed keys in ${CONFIG_FILE}"
 set_config "FEEDER_LAT"            "${PF_LAT}"

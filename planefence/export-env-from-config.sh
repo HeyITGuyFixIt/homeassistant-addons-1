@@ -22,11 +22,21 @@ fi
 _HA_CONFIG=$(curl -sf --connect-timeout 5 --max-time 10 \
     -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
     -H "Content-Type: application/json" \
-    http://supervisor/core/api/config 2>/dev/null)
+    http://supervisor/core/api/config)
+_CURL_EXIT=$?
 
-if [ -n "$_HA_CONFIG" ]; then
+if [ $_CURL_EXIT -ne 0 ]; then
+    echo "[export-env] WARNING: HA API call failed (curl exit ${_CURL_EXIT}). Lat/lon placeholders will not be resolved." >&2
+elif [ -z "$_HA_CONFIG" ]; then
+    echo "[export-env] WARNING: HA API returned empty response. Lat/lon placeholders will not be resolved." >&2
+else
     _HA_LAT=$(echo "$_HA_CONFIG" | jq -r '.latitude // empty')
     _HA_LON=$(echo "$_HA_CONFIG" | jq -r '.longitude // empty')
+    if [ -z "$_HA_LAT" ] || [ -z "$_HA_LON" ]; then
+        echo "[export-env] WARNING: HA location not set (lat=${_HA_LAT} lon=${_HA_LON}). Set it under Settings → System → General." >&2
+    else
+        echo "[export-env] Resolved location from HA: lat=${_HA_LAT} lon=${_HA_LON}"
+    fi
 fi
 
 # Export all options as environment variables, replacing HA placeholders
