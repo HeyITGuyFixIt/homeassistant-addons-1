@@ -32,14 +32,21 @@ fi
 mkdir -p "${DATA_PERSIST}"
 mkdir -p "${DATA_PERSIST}/.internal"
 
+CONFIG_FILE="${DATA_PERSIST}/planefence.config"
+# The upstream image ships the template inside PERSIST_DIR. Save it before we
+# replace PERSIST_DIR with a symlink, otherwise it gets deleted.
+UPSTREAM_TEMPLATE="${PERSIST_DIR}/planefence.config.RENAME-and-EDIT-me"
+SAVED_TEMPLATE="${DATA_PERSIST}/planefence.config.RENAME-and-EDIT-me"
+if [ -f "${UPSTREAM_TEMPLATE}" ] && [ ! -f "${SAVED_TEMPLATE}" ]; then
+    cp "${UPSTREAM_TEMPLATE}" "${SAVED_TEMPLATE}"
+    echo "[ha-planefence-config] Saved upstream template to ${SAVED_TEMPLATE}"
+fi
+
 if [ ! -L "${PERSIST_DIR}" ]; then
     rm -rf "${PERSIST_DIR}"
     ln -sf "${DATA_PERSIST}" "${PERSIST_DIR}"
     echo "[ha-planefence-config] Linked ${PERSIST_DIR} -> ${DATA_PERSIST}"
 fi
-
-CONFIG_FILE="${PERSIST_DIR}/planefence.config"
-TEMPLATE_FILE="${PERSIST_DIR}/planefence.config.RENAME-and-EDIT-me"
 
 # get-pa-alertlist.sh requires these files to exist or it crashes.
 touch "${PERSIST_DIR}/plane-alert-db.txt"
@@ -58,11 +65,8 @@ set_config() {
 }
 
 if [ ! -f "${CONFIG_FILE}" ]; then
-    # First start: wait for planefence to drop the template, then copy it.
-    # The template is written by planefence's own startup into PERSIST_DIR,
-    # so it should already be there. Fall back to an empty file just in case.
-    if [ -f "${TEMPLATE_FILE}" ]; then
-        cp "${TEMPLATE_FILE}" "${CONFIG_FILE}"
+    if [ -f "${SAVED_TEMPLATE}" ]; then
+        cp "${SAVED_TEMPLATE}" "${CONFIG_FILE}"
         echo "[ha-planefence-config] First start — copied template to ${CONFIG_FILE}"
     else
         touch "${CONFIG_FILE}"
