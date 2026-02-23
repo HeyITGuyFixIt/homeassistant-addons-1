@@ -33,8 +33,10 @@ if [ $_CURL_EXIT -ne 0 ]; then
 elif [ -z "$_HA_CONFIG" ]; then
     echo "[export-env] WARNING: HA API returned empty response. Lat/lon placeholders will not be resolved." >&2
 else
-    _HA_LAT=$(echo "$_HA_CONFIG" | jq -r '.latitude // empty')
-    _HA_LON=$(echo "$_HA_CONFIG" | jq -r '.longitude // empty')
+    # HA Core API returns {"latitude":...} directly; Supervisor may wrap it as
+    # {"result":"ok","data":{"latitude":...}}. Handle both formats.
+    _HA_LAT=$(echo "$_HA_CONFIG" | jq -r '.latitude // .data.latitude // empty' 2>/dev/null)
+    _HA_LON=$(echo "$_HA_CONFIG" | jq -r '.longitude // .data.longitude // empty' 2>/dev/null)
     if [ -z "$_HA_LAT" ] || [ -z "$_HA_LON" ]; then
         echo "[export-env] WARNING: HA location not set (lat=${_HA_LAT} lon=${_HA_LON}). Set it under Settings → System → General." >&2
     else

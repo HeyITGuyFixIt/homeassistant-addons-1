@@ -14,6 +14,14 @@ COPY export-env-from-config.sh /export-env-from-config.sh
 COPY rootfs /
 RUN chmod +x /etc/cont-init.d/00-ha-planefence-config.sh
 
+# Replace planefence's ephemeral persist dir with a symlink to /config/planefence
+# at build time so all s6 services see the correct path from the very first moment.
+# Save the upstream template first so cont-init.d can copy it on first start.
+RUN cp /usr/share/planefence/persist/planefence.config.RENAME-and-EDIT-me \
+        /planefence.config.template \
+    && rm -rf /usr/share/planefence/persist \
+    && ln -sf /config/planefence /usr/share/planefence/persist
+
 # Upstream bug: pkill socket30003.pl returns exit code 1 when the process
 # isn't running yet (first start), which kills the script under set -eo pipefail.
 RUN sed -i 's/pkill socket30003\.pl$/pkill socket30003.pl || true/' \

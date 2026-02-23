@@ -2,58 +2,47 @@
 # Generate/update planefence.config from Home Assistant add-on options.
 # Runs via legacy-cont-init before planefence services start.
 #
-# First start: copies the upstream template (planefence.config.RENAME-and-EDIT-me)
+# The symlink /usr/share/planefence/persist -> /config/planefence is created
+# at build time in the Dockerfile, so all s6 services see it immediately.
+# This script just ensures the target directory exists and writes the config.
+#
+# First start: copies /planefence.config.template (saved at build time)
 #              so the user has a fully documented config to customise.
-# Every start:  updates the keys managed by the HA add-on options; all other
+# Every start:  updates only the keys managed by HA add-on options; all other
 #              lines (custom settings added by the user) are left untouched.
 
 # Source HA options as environment variables
 . /export-env-from-config.sh
 
-# /addon_config is mounted by HA Supervisor (map: addon_config:rw in config.yaml).
-# It lives at /addon_configs/planefence/ on the host, so the VS Code addon and
-# other tools can reach it. Symlink planefence's expected persist dir here so
-# all noise logs, history, plane-alert-db and planefence.config survive restarts
-# and are user-accessible.
-PERSIST_DIR="/usr/share/planefence/persist"
-
-# Determine where to persist data.
-# Prefer /config/planefence (map: config:rw in config.yaml — always available,
-# accessible via VS Code and File Editor addons).
-# Fall back to /data/persist if /config is not mounted (e.g. local testing).
+# Ensure the symlink target exists (HA mounts /config at runtime).
+# Fall back to /data/persist if /config is not available (e.g. local testing).
 if [ -d /config ]; then
     DATA_PERSIST="/config/planefence"
     echo "[ha-planefence-config] Using /config/planefence for persistent storage"
 else
     DATA_PERSIST="/data/persist"
     echo "[ha-planefence-config] WARNING: /config not available, falling back to /data/persist"
+    # Re-point the symlink to the fallback location
+    ln -sfn "${DATA_PERSIST}" /usr/share/planefence/persist
 fi
 
 mkdir -p "${DATA_PERSIST}"
 mkdir -p "${DATA_PERSIST}/.internal"
 
 CONFIG_FILE="${DATA_PERSIST}/planefence.config"
-# The upstream image ships the template inside PERSIST_DIR. Save it before we
-# replace PERSIST_DIR with a symlink, otherwise it gets deleted.
-UPSTREAM_TEMPLATE="${PERSIST_DIR}/planefence.config.RENAME-and-EDIT-me"
 SAVED_TEMPLATE="${DATA_PERSIST}/planefence.config.RENAME-and-EDIT-me"
-if [ -f "${UPSTREAM_TEMPLATE}" ] && [ ! -f "${SAVED_TEMPLATE}" ]; then
-    cp "${UPSTREAM_TEMPLATE}" "${SAVED_TEMPLATE}"
-    echo "[ha-planefence-config] Saved upstream template to ${SAVED_TEMPLATE}"
-fi
 
-if [ ! -L "${PERSIST_DIR}" ]; then
-    # Remove directory contents first, then the dir itself, then symlink.
-    rm -rf "${PERSIST_DIR:?}/"*
-    rm -rf "${PERSIST_DIR:?}/".* 2>/dev/null || true
-    rmdir "${PERSIST_DIR}" 2>/dev/null || rm -rf "${PERSIST_DIR}"
-    ln -sf "${DATA_PERSIST}" "${PERSIST_DIR}"
-    echo "[ha-planefence-config] Linked ${PERSIST_DIR} -> ${DATA_PERSIST}"
+# Copy the upstream template to the persistent dir on first start so the
+# user can edit it. The template was saved to /planefence.config.template
+# in the Dockerfile before the persist dir was replaced with a symlink.
+if [ ! -f "${SAVED_TEMPLATE}" ] && [ -f /planefence.config.template ]; then
+    cp /planefence.config.template "${SAVED_TEMPLATE}"
+    echo "[ha-planefence-config] Copied upstream template to ${SAVED_TEMPLATE}"
 fi
 
 # get-pa-alertlist.sh requires these files to exist or it crashes.
-touch "${PERSIST_DIR}/plane-alert-db.txt"
-touch "${PERSIST_DIR}/.internal/plane-alert-db.txt"
+touch "${DATA_PERSIST}/plane-alert-db.txt"
+touch "${DATA_PERSIST}/.internal/plane-alert-db.txt"
 
 # Helper: set KEY=VALUE in config file.
 # Updates existing line or appends if the key is not present yet.
