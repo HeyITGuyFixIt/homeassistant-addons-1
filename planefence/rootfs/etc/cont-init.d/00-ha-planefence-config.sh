@@ -14,20 +14,27 @@
 # Source HA options as environment variables
 . /export-env-from-config.sh
 
-# Ensure the symlink target exists (HA mounts /config at runtime).
-# Fall back to /data/persist if /config is not available (e.g. local testing).
+# The Dockerfile created /usr/share/planefence/persist -> /var/lib/planefence-persist
+# so s6 services can start cleanly. Now re-point to the real persistent location.
+# Fall back to the stub if /config is not available (e.g. local testing).
 if [ -d /config ]; then
     DATA_PERSIST="/config/planefence"
     echo "[ha-planefence-config] Using /config/planefence for persistent storage"
 else
-    DATA_PERSIST="/data/persist"
-    echo "[ha-planefence-config] WARNING: /config not available, falling back to /data/persist"
-    # Re-point the symlink to the fallback location
-    ln -sfn "${DATA_PERSIST}" /usr/share/planefence/persist
+    DATA_PERSIST="/var/lib/planefence-persist"
+    echo "[ha-planefence-config] WARNING: /config not available, using ephemeral stub"
 fi
 
 mkdir -p "${DATA_PERSIST}"
 mkdir -p "${DATA_PERSIST}/.internal"
+
+# Re-point the symlink if it's not already pointing to the right place.
+if [ "$(readlink /usr/share/planefence/persist)" != "${DATA_PERSIST}" ]; then
+    # Copy anything the early s6 services may have written to the stub.
+    cp -rn /var/lib/planefence-persist/. "${DATA_PERSIST}/" 2>/dev/null || true
+    ln -sfn "${DATA_PERSIST}" /usr/share/planefence/persist
+    echo "[ha-planefence-config] Re-pointed /usr/share/planefence/persist -> ${DATA_PERSIST}"
+fi
 
 CONFIG_FILE="${DATA_PERSIST}/planefence.config"
 SAVED_TEMPLATE="${DATA_PERSIST}/planefence.config.RENAME-and-EDIT-me"
@@ -100,3 +107,8 @@ if [ -n "${TZ}" ] && [ -f "/usr/share/zoneinfo/${TZ}" ]; then
     echo "${TZ}" > /etc/timezone
     echo "[ha-planefence-config] Timezone set to ${TZ}"
 fi
+
+# Signal to 00-container-startup (patched in Dockerfile) that the real
+# planefence.config has been written and it is safe to proceed.
+touch /run/ha-planefence-ready
+echo "[ha-planefence-config] Signalled ready (/run/ha-planefence-ready)"
