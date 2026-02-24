@@ -37,25 +37,25 @@ if [ "$_HA_NEEDS_RESOLVE" = true ]; then
     _HA_MAX_RETRIES=10
     _HA_RETRY_DELAY=3
 
-    bashio::log.info "export-env: options.json contains HOMEASSISTANT_* placeholders — resolving via bashio"
+    bashio::log.info "export-env: options.json contains HOMEASSISTANT_* placeholders — resolving via HA Core API"
     bashio::log.info "export-env: SUPERVISOR_TOKEN is ${SUPERVISOR_TOKEN:+set (${#SUPERVISOR_TOKEN} chars)}${SUPERVISOR_TOKEN:-EMPTY/UNSET}"
 
     for _attempt in $(seq 1 $_HA_MAX_RETRIES); do
-        bashio::log.info "export-env: Attempt ${_attempt}/${_HA_MAX_RETRIES}: bashio::homeassistant.latitude / .longitude"
+        bashio::log.info "export-env: Attempt ${_attempt}/${_HA_MAX_RETRIES}: GET /core/api/config"
 
-        # bashio::homeassistant.latitude calls the Supervisor API with correct auth
-        if _HA_LAT=$(bashio::homeassistant.latitude 2>&1) && \
-           _HA_LON=$(bashio::homeassistant.longitude 2>&1); then
-
+        # Use bashio::api.request to hit the HA Core config endpoint directly
+        if _HA_CONFIG=$(bashio::api.request GET /core/api/config 2>&1); then
+            _HA_LAT=$(echo "$_HA_CONFIG" | jq -r '.latitude // empty')
+            _HA_LON=$(echo "$_HA_CONFIG" | jq -r '.longitude // empty')
             bashio::log.info "export-env:   Result: lat=[${_HA_LAT}] lon=[${_HA_LON}]"
 
             if [ -n "$_HA_LAT" ] && [ -n "$_HA_LON" ]; then
                 bashio::log.info "export-env: Resolved location from HA: lat=${_HA_LAT} lon=${_HA_LON}"
                 break
             fi
-            bashio::log.warning "export-env:   lat/lon empty"
+            bashio::log.warning "export-env:   lat/lon empty in response"
         else
-            bashio::log.warning "export-env:   bashio call failed (lat=${_HA_LAT} lon=${_HA_LON})"
+            bashio::log.warning "export-env:   API request failed: ${_HA_CONFIG:-no output}"
             _HA_LAT=""
             _HA_LON=""
         fi
