@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/with-contenv bashio
 # Generate/update planefence.config from Home Assistant add-on options.
 # Runs via legacy-cont-init before planefence services start.
 #

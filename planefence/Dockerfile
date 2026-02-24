@@ -3,9 +3,27 @@ FROM $BUILD_FROM
 
 ENV TZ=UTC
 
-# Add curl, jq, bc for HA Supervisor API calls
+# Add bashio for HA Supervisor API integration, plus curl/jq/bc
+ADD https://github.com/hassio-addons/bashio/archive/v0.16.2.tar.gz /tmp/bashio.tar.gz
 RUN apt-get update && apt-get install -y curl jq bc \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && mkdir /tmp/bashio \
+    && tar zxf /tmp/bashio.tar.gz --strip 1 -C /tmp/bashio \
+    && mv /tmp/bashio/lib /usr/lib/bashio \
+    && ln -s /usr/lib/bashio/bashio /usr/bin/bashio \
+    && rm -rf /tmp/bashio.tar.gz /tmp/bashio
+
+# s6-overlay v3 puts executables in /command/ but HA addon shebangs
+# expect /usr/bin/with-contenv — create symlink if needed.
+RUN if [ ! -f /usr/bin/with-contenv ] && [ -f /command/with-contenv ]; then \
+        ln -s /command/with-contenv /usr/bin/with-contenv; \
+        echo "Symlinked /command/with-contenv -> /usr/bin/with-contenv"; \
+    elif [ -f /usr/bin/with-contenv ]; then \
+        echo "with-contenv already at /usr/bin/with-contenv"; \
+    else \
+        echo "WARNING: with-contenv not found at /usr/bin or /command!"; \
+        find / -name with-contenv -not -path "/proc/*" 2>/dev/null; \
+    fi
 
 # Add cont-init.d script to generate planefence.config from HA options.
 # Planefence reads all its config from planefence.config, so we don't
