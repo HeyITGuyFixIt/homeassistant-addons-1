@@ -38,13 +38,15 @@ if [ "$_HA_NEEDS_RESOLVE" = true ]; then
     _HA_RETRY_DELAY=3
 
     bashio::log.info "export-env: options.json contains HOMEASSISTANT_* placeholders — resolving via HA Core API"
-    bashio::log.info "export-env: SUPERVISOR_TOKEN is ${SUPERVISOR_TOKEN:+set (${#SUPERVISOR_TOKEN} chars)}${SUPERVISOR_TOKEN:-EMPTY/UNSET}"
+    bashio::log.info "export-env: SUPERVISOR_TOKEN is ${SUPERVISOR_TOKEN:+set (${#SUPERVISOR_TOKEN} chars, ${SUPERVISOR_TOKEN:0:3}...)}${SUPERVISOR_TOKEN:-EMPTY/UNSET}"
 
     for _attempt in $(seq 1 $_HA_MAX_RETRIES); do
         bashio::log.info "export-env: Attempt ${_attempt}/${_HA_MAX_RETRIES}: GET /core/api/config"
 
-        # Use bashio::api.request to hit the HA Core config endpoint directly
-        if _HA_CONFIG=$(bashio::api.request GET /core/api/config 2>&1); then
+        # Use curl with SUPERVISOR_TOKEN (loaded by with-contenv) to hit HA Core API
+        if _HA_CONFIG=$(curl -sSf \
+            -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+            http://supervisor/core/api/config 2>&1); then
             _HA_LAT=$(echo "$_HA_CONFIG" | jq -r '.latitude // empty')
             _HA_LON=$(echo "$_HA_CONFIG" | jq -r '.longitude // empty')
             bashio::log.info "export-env:   Result: lat=[${_HA_LAT}] lon=[${_HA_LON}]"
