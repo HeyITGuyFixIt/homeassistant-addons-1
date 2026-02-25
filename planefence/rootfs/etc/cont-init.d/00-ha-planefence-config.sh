@@ -89,22 +89,140 @@ if [ "${PF_LAT}" = "HOMEASSISTANT_LATITUDE" ] || [ "${PF_LON}" = "HOMEASSISTANT_
 fi
 
 # Update all HA-managed keys (runs on every start, including first).
+# Only set a key if the corresponding env var is non-empty, so that
+# user edits in planefence.config are preserved for unconfigured options.
 echo "[ha-planefence-config] Updating managed keys in ${CONFIG_FILE}"
+
+# Helper: only call set_config when value is non-empty
+set_config_if() {
+    local key="$1"
+    local value="$2"
+    if [ -n "$value" ]; then
+        set_config "$key" "$value"
+    fi
+}
+
+# ── Required: Station & Data Source ──────────────────────────────────
 set_config "FEEDER_LAT"            "${PF_LAT}"
 set_config "FEEDER_LONG"           "${PF_LON}"
-set_config "PF_MAXDIST"            "${PF_MAXDIST:-50}"
-set_config "PF_MAXALT"             "${PF_MAXALT:-10000}"
 set_config "PF_SOCK30003HOST"      "${PF_SOCK30003HOST:-adsb-multi-portal-feeder}"
 set_config "PF_SOCK30003PORT"      "${PF_SOCK30003PORT:-30003}"
-set_config "PF_DISCORD"            "${PA_DISCORD:+true}"
-set_config "PF_DISCORD_WEBHOOKURL" "${PA_DISCORD:-}"
-set_config "MASTODON_SERVER"       "${PA_MASTODON_SERVER:-}"
-set_config "MASTODON_ACCESS_TOKEN" "${PA_MASTODON_ACCESS_TOKEN:-}"
-set_config "TELEGRAM_BOT_TOKEN"    "${PA_TELEGRAM_BOTTOKEN:-}"
-set_config "TELEGRAM_CHAT_ID"      "${PA_TELEGRAM_CHATID:-}"
-set_config "PF_ALERTLIST"          "plane-alert-db.txt"
-set_config "PA_EXCLUSIONS"         "${PA_EXCLUSIONS:-}"
-set_config "PF_OPENAIP_LAYER"      "${PF_OPENAIP_LAYER:-OFF}"
+set_config "PF_MAXDIST"            "${PF_MAXDIST:-2.0}"
+set_config "PF_MAXALT"             "${PF_MAXALT:-5000}"
+
+# ── General Parameters ───────────────────────────────────────────────
+set_config_if "PF_DISTUNIT"        "${PF_DISTUNIT:-}"
+set_config_if "PF_ALTUNIT"         "${PF_ALTUNIT:-}"
+set_config_if "PF_SPEEDUNIT"       "${PF_SPEEDUNIT:-}"
+set_config_if "PF_INTERVAL"        "${PF_INTERVAL:-}"
+set_config_if "PF_NAME"            "${PF_NAME:-}"
+set_config_if "PF_MAPURL"          "${PF_MAPURL:-}"
+set_config_if "PF_MAPZOOM"         "${PF_MAPZOOM:-}"
+set_config_if "PF_ELEVATION"       "${PF_ELEVATION:-}"
+set_config_if "PF_FUDGELOC"        "${PF_FUDGELOC:-}"
+set_config_if "PF_CHECKROUTE"      "${PF_CHECKROUTE:-}"
+set_config_if "PF_TRACKSERVICE"    "${PF_TRACKSERVICE:-}"
+set_config_if "PF_SHOWIMAGES"      "${PF_SHOWIMAGES:-}"
+set_config_if "PF_NOISECAPT"       "${PF_NOISECAPT:-}"
+set_config_if "PF_CHECKREMOTEDB"   "${PF_CHECKREMOTEDB:-}"
+set_config_if "PF_DELETEAFTER"     "${PF_DELETEAFTER:-}"
+set_config_if "PF_IGNOREDUPES"     "${PF_IGNOREDUPES:-}"
+set_config_if "PF_COLLAPSEWITHIN"  "${PF_COLLAPSEWITHIN:-}"
+set_config_if "PF_MOTD"            "${PF_MOTD:-}"
+set_config_if "GENERATE_CSV"       "${GENERATE_CSV:-}"
+set_config_if "OPENSKYDB_DOWNLOAD" "${OPENSKYDB_DOWNLOAD:-}"
+
+# ── Web Page ─────────────────────────────────────────────────────────
+set_config_if "PF_TABLESIZE"       "${PF_TABLESIZE:-}"
+set_config_if "PF_OPENAIP_LAYER"   "${PF_OPENAIP_LAYER:-}"
+set_config_if "PF_OPENAIPKEY"      "${PF_OPENAIPKEY:-}"
+
+# ── Plane-Alert ──────────────────────────────────────────────────────
+set_config_if "PF_PLANEALERT"      "${PF_PLANEALERT:-}"
+set_config_if "PF_PARANGE"         "${PF_PARANGE:-}"
+set_config_if "PF_PA_SQUAWKS"      "${PF_PA_SQUAWKS:-}"
+set_config_if "PF_ALERTLIST"       "${PF_ALERTLIST:-}"
+set_config_if "PF_ALERTHEADER"     "${PF_ALERTHEADER:-}"
+set_config_if "PA_HISTTIME"        "${PA_HISTTIME:-}"
+set_config_if "PA_TRACKSERVICE"    "${PA_TRACKSERVICE:-}"
+set_config_if "PA_EXCLUSIONS"      "${PA_EXCLUSIONS:-}"
+set_config_if "PA_TABLESIZE"       "${PA_TABLESIZE:-}"
+set_config_if "PA_MOTD"            "${PA_MOTD:-}"
+
+# ── Screenshot ───────────────────────────────────────────────────────
+set_config_if "PF_SCREENSHOTURL"       "${PF_SCREENSHOTURL:-}"
+set_config_if "PF_SCREENSHOT_TIMEOUT"  "${PF_SCREENSHOT_TIMEOUT:-}"
+
+# ── Notifications - General ──────────────────────────────────────────
+set_config_if "NOTIF_DATEFORMAT"   "${NOTIF_DATEFORMAT:-}"
+set_config_if "PF_NOTIFEVERY"      "${PF_NOTIFEVERY:-}"
+set_config_if "PF_ATTRIB"          "${PF_ATTRIB:-}"
+set_config_if "PA_ATTRIB"          "${PA_ATTRIB:-}"
+set_config_if "DISCORD_FEEDER_NAME" "${DISCORD_FEEDER_NAME:-}"
+set_config_if "DISCORD_MEDIA"      "${DISCORD_MEDIA:-}"
+
+# ── Discord ──────────────────────────────────────────────────────────
+set_config_if "PF_DISCORD"         "${PF_DISCORD:-}"
+set_config_if "PF_DISCORD_WEBHOOKS" "${PF_DISCORD_WEBHOOKS:-}"
+set_config_if "PF_DISCORD_COLOR"   "${PF_DISCORD_COLOR:-}"
+set_config_if "PA_DISCORD"         "${PA_DISCORD:-}"
+set_config_if "PA_DISCORD_WEBHOOKS" "${PA_DISCORD_WEBHOOKS:-}"
+set_config_if "PA_DISCORD_COLOR"   "${PA_DISCORD_COLOR:-}"
+
+# ── Mastodon ─────────────────────────────────────────────────────────
+set_config_if "PF_MASTODON"        "${PF_MASTODON:-}"
+set_config_if "PA_MASTODON"        "${PA_MASTODON:-}"
+set_config_if "MASTODON_SERVER"    "${MASTODON_SERVER:-}"
+set_config_if "MASTODON_ACCESS_TOKEN" "${MASTODON_ACCESS_TOKEN:-}"
+set_config_if "PF_MASTODON_VISIBILITY" "${PF_MASTODON_VISIBILITY:-}"
+set_config_if "PA_MASTODON_VISIBILITY" "${PA_MASTODON_VISIBILITY:-}"
+set_config_if "PA_MASTODON_MAXIMGS"    "${PA_MASTODON_MAXIMGS:-}"
+set_config_if "MASTODON_RETENTION_TIME" "${MASTODON_RETENTION_TIME:-}"
+
+# ── Telegram ─────────────────────────────────────────────────────────
+set_config_if "TELEGRAM_BOT_TOKEN"     "${TELEGRAM_BOT_TOKEN:-}"
+set_config_if "PF_TELEGRAM_CHAT_ID"    "${PF_TELEGRAM_CHAT_ID:-}"
+set_config_if "PA_TELEGRAM_CHAT_ID"    "${PA_TELEGRAM_CHAT_ID:-}"
+set_config_if "PF_TELEGRAM_ENABLED"    "${PF_TELEGRAM_ENABLED:-}"
+set_config_if "PA_TELEGRAM_ENABLED"    "${PA_TELEGRAM_ENABLED:-}"
+set_config_if "PF_TELEGRAM_CHAT_TYPE"  "${PF_TELEGRAM_CHAT_TYPE:-}"
+set_config_if "PA_TELEGRAM_CHAT_TYPE"  "${PA_TELEGRAM_CHAT_TYPE:-}"
+
+# ── BlueSky ──────────────────────────────────────────────────────────
+set_config_if "BLUESKY_HANDLE"         "${BLUESKY_HANDLE:-}"
+set_config_if "BLUESKY_APP_PASSWORD"   "${BLUESKY_APP_PASSWORD:-}"
+set_config_if "PF_BLUESKY_ENABLED"     "${PF_BLUESKY_ENABLED:-}"
+set_config_if "PA_BLUESKY_ENABLED"     "${PA_BLUESKY_ENABLED:-}"
+
+# ── MQTT - Planefence ────────────────────────────────────────────────
+set_config_if "PF_MQTT_URL"            "${PF_MQTT_URL:-}"
+set_config_if "PF_MQTT_PORT"           "${PF_MQTT_PORT:-}"
+set_config_if "PF_MQTT_TLS"            "${PF_MQTT_TLS:-}"
+set_config_if "PF_MQTT_CLIENT_ID"      "${PF_MQTT_CLIENT_ID:-}"
+set_config_if "PF_MQTT_TOPIC"          "${PF_MQTT_TOPIC:-}"
+set_config_if "PF_MQTT_DATETIME_FORMAT" "${PF_MQTT_DATETIME_FORMAT:-}"
+set_config_if "PF_MQTT_QOS"            "${PF_MQTT_QOS:-}"
+set_config_if "PF_MQTT_FIELDS"         "${PF_MQTT_FIELDS:-}"
+set_config_if "PF_MQTT_USERNAME"       "${PF_MQTT_USERNAME:-}"
+set_config_if "PF_MQTT_PASSWORD"       "${PF_MQTT_PASSWORD:-}"
+
+# ── MQTT - Plane-Alert ───────────────────────────────────────────────
+set_config_if "PA_MQTT_URL"            "${PA_MQTT_URL:-}"
+set_config_if "PA_MQTT_PORT"           "${PA_MQTT_PORT:-}"
+set_config_if "PA_MQTT_TLS"            "${PA_MQTT_TLS:-}"
+set_config_if "PA_MQTT_CLIENT_ID"      "${PA_MQTT_CLIENT_ID:-}"
+set_config_if "PA_MQTT_TOPIC"          "${PA_MQTT_TOPIC:-}"
+set_config_if "PA_MQTT_DATETIME_FORMAT" "${PA_MQTT_DATETIME_FORMAT:-}"
+set_config_if "PA_MQTT_QOS"            "${PA_MQTT_QOS:-}"
+set_config_if "PA_MQTT_FIELDS"         "${PA_MQTT_FIELDS:-}"
+set_config_if "PA_MQTT_USERNAME"       "${PA_MQTT_USERNAME:-}"
+set_config_if "PA_MQTT_PASSWORD"       "${PA_MQTT_PASSWORD:-}"
+
+# ── RSS ──────────────────────────────────────────────────────────────
+set_config_if "PF_RSS_SITELINK"        "${PF_RSS_SITELINK:-}"
+set_config_if "PF_RSS_FAVICONLINK"     "${PF_RSS_FAVICONLINK:-}"
+set_config_if "PA_RSS_SITELINK"        "${PA_RSS_SITELINK:-}"
+set_config_if "PA_RSS_FAVICONLINK"     "${PA_RSS_FAVICONLINK:-}"
 
 echo "[ha-planefence-config] Done."
 
